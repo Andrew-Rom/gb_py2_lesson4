@@ -9,6 +9,8 @@
 ✔ При превышении суммы в 5 млн, вычитать налог на богатство 10% перед каждой
 операцией, даже ошибочной
 ✔ Любое действие выводит сумму денег
+
+Дополнительно сохраняйте все операции поступления и снятия средств в список.
 """
 
 
@@ -41,6 +43,7 @@ def main_menu():
                     withdraw_funds(money=cash)
             case '0':
                 print('Thank you for using our ATM.')
+                print(operations)
                 exit()
             case _:
                 print('Incorrect selection. Please, try again \n')
@@ -52,15 +55,18 @@ def get_amount():
 
 
 def add_funds(money: int):
-    global operation_counter, card_balance
+    global operation_counter, card_balance, operations
+    temp = card_balance
     card_balance += money
+    operations.append(('add funds', temp, money, card_balance))
     operation_counter += 1
     if operation_counter == BONUS_CONDITION:
         operation_bonus()
 
 
 def withdraw_funds(money: int):
-    global operation_counter, card_balance
+    global operation_counter, card_balance, operations
+    temp = card_balance
     atm_fee = money * ATM_INTERESTS
     if atm_fee < ATM_INTERESTS_MIN:
         atm_fee = ATM_INTERESTS_MIN
@@ -68,6 +74,7 @@ def withdraw_funds(money: int):
         atm_fee = ATM_INTERESTS_MAX
     if card_balance >= money + atm_fee:
         card_balance -= (money + atm_fee)
+        operations.append(('withdraw funds', temp, money, atm_fee, card_balance))
         operation_counter += 1
         if operation_counter == BONUS_CONDITION:
             operation_bonus()
@@ -76,15 +83,19 @@ def withdraw_funds(money: int):
 
 
 def operation_bonus():
-    global card_balance, operation_counter
+    global card_balance, operation_counter, operations
+    temp = card_balance
     card_balance += card_balance * BONUS
+    operations.append(('pay bonus', temp, card_balance * BONUS, card_balance))
     operation_counter = 0
 
 
 def hold_tax():
-    global card_balance
+    global card_balance, operations
+    temp = card_balance
     if card_balance > TAX_CONDITION:
         card_balance -= card_balance * TAX_RATE
+        operations.append(('pay tax', temp, card_balance * TAX_RATE, card_balance))
 
 
 BONUS = 3 / 100
@@ -99,5 +110,6 @@ ATM_INTERESTS_MAX = 600
 
 card_balance = 0
 operation_counter = 0
+operations = []
 
 main_menu()
